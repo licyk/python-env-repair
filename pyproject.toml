@@ -1,0 +1,140 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "python-env-repair"
+dynamic = ["version"]
+description = "Detect and repair console_scripts launchers of a Python environment without reinstalling packages"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "GPL-3.0-only"
+# The vendored Windows launcher stubs keep their own PSF-2.0 license.
+license-files = ["LICENSE", "python_env_repair/_launchers/LICENSE.txt"]
+# No runtime dependencies: the generator is built in and the Windows launcher stubs are
+# vendored from distlib 0.4.3 (see python_env_repair/_launchers/README.md).
+dependencies = []
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS",
+]
+
+[project.scripts]
+# Convenience only; the documented invocation is `python -B -m python_env_repair`,
+# which does not depend on a console entry point that may itself be broken.
+python-env-repair = "python_env_repair.cli:main"
+
+[tool.setuptools]
+# `_launchers` holds data only (vendored stubs); it is listed so setuptools does not warn
+# about an implicit namespace package.
+packages = ["python_env_repair", "python_env_repair._launchers"]
+
+[tool.setuptools.dynamic]
+version = { attr = "python_env_repair.version.VERSION" }
+
+[tool.setuptools.package-data]
+"python_env_repair._launchers" = ["*.exe", "LICENSE.txt", "README.md"]
+
+[dependency-groups]
+dev = [
+    "ruff",
+    "ty",
+    "pytest",
+    # Test-only: byte-for-byte comparison of generated output with distlib.
+    "distlib",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-p no:cacheprovider"
+
+[tool.ruff]
+target-version = "py310"
+line-length = 200
+indent-width = 4
+src = ["."]
+extend-exclude = [
+    "__pycache__",
+    "notebook",
+    ".github",
+]
+
+[tool.ruff.lint]
+# Inherit the complete ignore set from sd-webui-all-in-one, removing duplicates only.
+# Do not set select = ["ALL"]; use the default rule set of the locked tool version.
+ignore = [
+    "E402",    # module-import-not-at-top-of-file
+    "I001",    # unsorted-imports
+    "TRY201",  # verbose-raise
+    "PYI041",  # redundant-numeric-union
+    "UP035",   # deprecated-import
+    "SIM117",  # multiple-with-statements
+    "BLE001",  # blind-except
+    "RUF022",  # unsorted-dunder-all
+    "SIM114",  # if-with-same-arms
+    "UP037",   # quoted-annotation
+    "B010",    # set-attr-with-constant
+    "TRY004",  # type-check-without-type-error
+    "UP022",   # replace-stdout-stderr
+    "PLW1510", # subprocess-run-without-check
+    "B009",    # get-attr-with-constant
+    "SIM102",  # collapsible-if
+    "PYI036",  # bad-exit-annotation
+    "FLY002",  # static-join-to-f-string
+    "PLR0402", # manual-from-import
+    "UP031",   # printf-string-formatting
+    "RUF059",  # unused-unpacked-variable
+    "UP041",   # timeout-error-alias
+    "FURB188", # slice-to-remove-prefix-or-suffix
+    "RUF100",  # unused-noqa
+    "RUF015",  # unnecessary-iterable-allocation-for-first-element
+    "B023",    # function-uses-loop-variable
+    "PIE790",  # unnecessary-placeholder
+    "PERF102", # incorrect-dict-iterator
+    "PIE807",  # reimplemented-container-builtin
+    "UP045",   # non-pep604-annotation-optional
+    "PYI034",  # non-self-return-type
+    "S110",    # try-except-pass
+    "RUF012",  # mutable-class-default
+    "PIE810",  # multiple-starts-ends-with
+    "SIM113",  # enumerate-for-loop
+    "PLC0414", # useless-import-alias
+    "DTZ005",  # call-datetime-now-without-tzinfo
+    "UP024",   # os-error-alias
+    "FURB167", # regex-flag-alias
+    "RUF023",  # unsorted-dunder-slots
+    "S102",    # exec-builtin
+    "SIM103",  # needless-bool
+    "RUF019",  # unnecessary-key-check
+    "SIM115",  # open-file-with-context-handler
+    "PLR1730", # if-stmt-min-max
+    "RUF007",  # zip-instead-of-pairwise
+    "RET501",  # unnecessary-return-none
+    "TRY002",  # raise-vanilla-class
+    "PLR1711", # useless-return
+    "B008",    # function-call-in-default-argument
+    "DTZ001",  # call-datetime-without-tzinfo
+    "B018",    # useless-expression
+]
+
+[tool.ruff.format]
+quote-style = "double"
+skip-magic-trailing-comma = false
+
+[tool.ty.environment]
+python-version = "3.10"
+
+[tool.ty.terminal]
+output-format = "concise"
+
+[tool.ty.src]
+include = ["python_env_repair", "tests"]
+
+# As in the reference project, do not configure global ignores in [tool.ty.rules].
